@@ -3,6 +3,13 @@
 -- Database: H2 (in-memory); SQL is ANSI-compatible and portable to PostgreSQL.
 -- =============================================================================
 
+-- Drop in FK-safe order so this script stays idempotent across Spring context
+-- reloads (DB_CLOSE_DELAY=-1 keeps the in-memory DB alive between contexts,
+-- which would otherwise leave stale rows from prior tests).
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS products;
+
 -- products
 --   Stores the sellable catalogue. Price is kept in cents (R39.99 = 3999) to
 --   avoid IEEE 754 floating-point rounding. SKU is the business identifier and
