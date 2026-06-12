@@ -1,6 +1,8 @@
 package com.picknpay.ecommerce.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,18 @@ public class GlobalExceptionHandler {
         Map<String, String> fields = new LinkedHashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(fe ->
                 fields.put(fe.getField(), fe.getDefaultMessage()));
+        return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Request validation failed", req, fields);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest req) {
+        Map<String, String> fields = new LinkedHashMap<>();
+        for (ConstraintViolation<?> v : ex.getConstraintViolations()) {
+            String path = v.getPropertyPath().toString();
+            // Property paths look like "methodName.paramName" — keep just the param.
+            int dot = path.lastIndexOf('.');
+            fields.put(dot >= 0 ? path.substring(dot + 1) : path, v.getMessage());
+        }
         return build(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Request validation failed", req, fields);
     }
 
