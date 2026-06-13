@@ -17,3 +17,8 @@ Thumbs.db
 
 *.log
 HELP.md
+
+# Private interview-prep material - keep local-only, do not push to public repo
+interview-prep.pdf
+interview-prep.md
+INTERVIEW_PREP.md

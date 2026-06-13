@@ -57,9 +57,14 @@ public class SecurityConfig {
                                 "/h2-console/**",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,  "/api/v1/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/**").authenticated()
+                        // Catalogue browsing is genuinely public — shoppers don't have accounts yet.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/*").permitAll()
+                        // Everything else under /api/v1 requires Basic Auth:
+                        //   - GET /orders/{id}    — order detail contains customer PII (sequential IDs would otherwise leak)
+                        //   - GET /reports/**     — sales aggregates are commercially sensitive
+                        //   - POST  /products, /orders   — writes
+                        //   - PATCH /orders/{id}/cancel  — writes
+                        .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().denyAll())
                 .httpBasic(Customizer.withDefaults());
 

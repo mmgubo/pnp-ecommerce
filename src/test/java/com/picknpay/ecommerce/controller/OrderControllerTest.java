@@ -127,7 +127,8 @@ class OrderControllerTest {
     }
 
     @Test
-    @DisplayName("GET /orders/{id} returns the order (public)")
+    @WithMockUser
+    @DisplayName("GET /orders/{id} returns the order when authenticated")
     void getOne_found() throws Exception {
         when(orderService.getOrderById(42L)).thenReturn(sampleOrder(OrderStatus.CONFIRMED));
 
@@ -137,6 +138,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("GET /orders/{id} returns 404 when not found")
     void getOne_notFound() throws Exception {
         when(orderService.getOrderById(99L)).thenThrow(new ResourceNotFoundException("Order", 99L));
@@ -144,6 +146,13 @@ class OrderControllerTest {
         mockMvc.perform(get("/api/v1/orders/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("GET /orders/{id} without auth returns 401 (PII protection)")
+    void getOne_noAuth_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/orders/42"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

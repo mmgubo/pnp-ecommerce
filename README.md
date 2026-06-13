@@ -51,10 +51,12 @@ Base path: `http://localhost:8080/api/v1`
 | `GET`   | `/products?name=&minPrice=&maxPrice=&page=&size=&sort=` | Public | Paginated, filtered product list |
 | `GET`   | `/products/{id}` | Public | Single product |
 | `POST`  | `/orders` | Basic Auth | Place an order (locks stock, decrements atomically) |
-| `GET`   | `/orders/{id}` | Public | Order with items |
+| `GET`   | `/orders/{id}` | Basic Auth | Order with items (contains customer PII) |
 | `PATCH` | `/orders/{id}/cancel` | Basic Auth | Cancel a CONFIRMED order, restore stock |
-| `GET`   | `/reports/top-products?limit=10&from=&to=` | Public | Top N products by units sold (CONFIRMED only) |
-| `GET`   | `/reports/order-summary` | Public | Counts / revenue / avg by status |
+| `GET`   | `/reports/top-products?limit=10&from=&to=` | Basic Auth | Top N products by units sold (commercially sensitive) |
+| `GET`   | `/reports/order-summary` | Basic Auth | Counts / revenue / avg by status (commercially sensitive) |
+
+**Why is the auth split this way?** Catalogue browsing (`GET /products`) is genuinely public — shoppers don't have accounts. Order details (`GET /orders/{id}`) contain customer name + email, and sequential `BIGINT` order IDs would make unauthenticated reads a PII-enumeration risk under POPIA / GDPR. Reports leak sales aggregates that are commercially sensitive. Writes require auth for the obvious reasons.
 
 ## Default credentials
 
