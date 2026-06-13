@@ -62,6 +62,14 @@ Base path: `http://localhost:8080/api/v1`
 
 Override via env vars `APP_SECURITY_USERNAME` and `APP_SECURITY_PASSWORD`.
 
+## Postman collection
+
+A ready-to-import Postman v2.1 collection lives at
+[`postman/pnp-ecommerce.postman_collection.json`](postman/pnp-ecommerce.postman_collection.json).
+It ships collection-level Basic Auth (using the default `admin`/`secret`), public
+overrides on GET endpoints, and chained scripts that capture `productId` /
+`orderId` from create/place responses so follow-up requests just work.
+
 ## Other URLs
 
 | Resource | URL |

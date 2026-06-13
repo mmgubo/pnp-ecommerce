@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "PnP Ecommerce Service",
+    "_postman_id": "0f7b4b2b-7a9f-4a4c-9b6e-pnp-ecommerce-v1",
+    "description": "Pick n Pay take-home backend. Base path `/api/v1`. GET endpoints are public; POST and PATCH require Basic Auth.\n\n**Variables**\n- `baseUrl` — defaults to `http://localhost:8080`\n- `username` / `password` — Basic Auth creds (default `admin` / `secret`)\n- `productId` / `orderId` — auto-populated by the Create / Place requests so chained calls just work.\n\nRun the requests top-to-bottom inside each folder for a clean happy-path demo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      { "key": "username", "value": "{{username}}", "type": "string" },
+      { "key": "password", "value": "{{password}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl",   "value": "http://localhost:8080", "type": "string" },
+    { "key": "username",  "value": "admin",                "type": "string" },
+    { "key": "password",  "value": "secret",               "type": "string" },
+    { "key": "productId", "value": "1",                    "type": "string" },
+    { "key": "orderId",   "value": "1",                    "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "description": "Catalogue endpoints. GETs are public; POST requires Basic Auth.",
+      "item": [
+        {
+          "name": "Create product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) {",
+                  "  pm.collectionVariables.set('productId', body.id);",
+                  "  console.log('productId set to', body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Pasta\",\n  \"description\": \"500g spaghetti, dried\",\n  \"price\": 3499,\n  \"stockQuantity\": 50,\n  \"sku\": \"SKU-PASTA-500\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Create a product. `price` is in cents (R34.99 = 3499). 201 on success, 400 on validation failure, 409 on duplicate SKU."
+          }
+        },
+        {
+          "name": "List products (no filters)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            },
+            "description": "Paginated list. Public. Default page size honours Spring Data defaults; `sort=field,dir` is supported."
+          }
+        },
+        {
+          "name": "List products (name + price filter)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?name=milk&minPrice=1000&maxPrice=5000&page=0&size=10&sort=price,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "name",     "value": "milk" },
+                { "key": "minPrice", "value": "1000" },
+                { "key": "maxPrice", "value": "5000" },
+                { "key": "page",     "value": "0" },
+                { "key": "size",     "value": "10" },
+                { "key": "sort",     "value": "price,asc" }
+              ]
+            },
+            "description": "Case-insensitive substring match on name with inclusive price bounds (cents)."
+          }
+        },
+        {
+          "name": "Get product by ID",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "products", "{{productId}}"]
+            },
+            "description": "Returns the product or 404 NOT_FOUND. Uses the `productId` set by the Create request."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "description": "Order placement and cancellation. POST/PATCH require Basic Auth.",
+      "item": [
+        {
+          "name": "Place order (single item)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "if (body && body.id) {",
+                  "  pm.collectionVariables.set('orderId', body.id);",
+                  "  console.log('orderId set to', body.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Lerato Mokoena\",\n  \"customerEmail\": \"lerato@example.com\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 2 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Atomic stock decrement under a pessimistic lock; `unit_price` is snapshotted at this moment.\n\n- 201 with the CONFIRMED order on success\n- 400 if validation fails\n- 409 INSUFFICIENT_STOCK if any line exceeds stock\n- 404 if a `productId` does not exist"
+          }
+        },
+        {
+          "name": "Place order (multi-item)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Thabo Nkosi\",\n  \"customerEmail\": \"thabo@example.com\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 3 },\n    { \"productId\": 2, \"quantity\": 2 },\n    { \"productId\": 3, \"quantity\": 1 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Each line locks its own product row, checks stock, decrements, and snapshots `unit_price`. The aggregate `totalAmount` is the sum of `unitPrice * quantity` across lines."
+          }
+        },
+        {
+          "name": "Place order (insufficient stock — expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Stress Tester\",\n  \"customerEmail\": \"stress@example.com\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 99999 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Demonstrates the INSUFFICIENT_STOCK guard. Returns 409 with the standard error envelope."
+          }
+        },
+        {
+          "name": "Get order by ID",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}"]
+            },
+            "description": "Returns the order with full item list and totals. Uses `orderId` from the most recent Place request."
+          }
+        },
+        {
+          "name": "Cancel order",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+            },
+            "description": "Cancels a CONFIRMED order and restores stock per item. 409 INVALID_ORDER_STATE if the order is already CANCELLED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Public sales aggregates over CONFIRMED orders.",
+      "item": [
+        {
+          "name": "Top products (default limit=10)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/top-products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "top-products"]
+            },
+            "description": "Ranked by total units sold across CONFIRMED orders. CANCELLED orders are excluded."
+          }
+        },
+        {
+          "name": "Top products (limit + date range)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/top-products?limit=5&from=2026-06-01&to=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "top-products"],
+              "query": [
+                { "key": "limit", "value": "5" },
+                { "key": "from",  "value": "2026-06-01" },
+                { "key": "to",    "value": "2026-12-31" }
+              ]
+            },
+            "description": "ISO date range filter on `orders.created_at`. The upper bound is inclusive by day (server treats it as `to + 1 day` exclusive). `limit` must be 1-50."
+          }
+        },
+        {
+          "name": "Top products (limit too high — expect 400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/top-products?limit=51",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "top-products"],
+              "query": [{ "key": "limit", "value": "51" }]
+            },
+            "description": "Demonstrates the constraint-violation handler returning a 400 with `fieldErrors.limit`."
+          }
+        },
+        {
+          "name": "Order summary",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/order-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "order-summary"]
+            },
+            "description": "Order count, total revenue, and average order value (CAST AVG AS BIGINT) grouped by status."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Docs & infra",
+      "description": "Useful out-of-band URLs.",
+      "item": [
+        {
+          "name": "OpenAPI JSON",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            }
+          }
+        },
+        {
+          "name": "Swagger UI (open in browser)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui.html",
+              "host": ["{{baseUrl}}"],
+              "path": ["swagger-ui.html"]
+            },
+            "description": "Postman returns the HTML; for a usable view open the URL in a browser."
+          }
+        },
+        {
+          "name": "H2 console (open in browser)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/h2-console",
+              "host": ["{{baseUrl}}"],
+              "path": ["h2-console"]
+            },
+            "description": "JDBC URL `jdbc:h2:mem:pnpdb`, user `sa`, blank password. Use a browser, not Postman."
+          }
+        }
+      ]
+    }
+  ]
+}
