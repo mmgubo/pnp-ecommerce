@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "PnP Ecommerce Service",
-    "_postman_id": "0f7b4b2b-7a9f-4a4c-9b6e-pnp-ecommerce-v1",
-    "description": "Pick n Pay take-home backend. Base path `/api/v1`. GET endpoints are public; POST and PATCH require Basic Auth.\n\n**Variables**\n- `baseUrl` — defaults to `http://localhost:8080`\n- `username` / `password` — Basic Auth creds (default `admin` / `secret`)\n- `productId` / `orderId` — auto-populated by the Create / Place requests so chained calls just work.\n\nRun the requests top-to-bottom inside each folder for a clean happy-path demo.",
+    "_postman_id": "d15d67e6-da7f-4d48-a278-3c0c6085509f",
+    "description": "Pick n Pay take-home backend. Base path `/api/v1`. GET endpoints are public; POST and PATCH require Basic Auth.\n\n**Variables**\n- `baseUrl` - defaults to `http://localhost:8080`\n- `username` / `password` - Basic Auth creds (default `admin` / `secret`)\n- `productId` / `orderId` - auto-populated by the Create / Place requests so chained calls just work.\n\nRun the requests top-to-bottom inside each folder for a clean happy-path demo.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -165,7 +165,7 @@
           }
         },
         {
-          "name": "Place order (insufficient stock — expect 409)",
+          "name": "Place order (insufficient stock - expect 409)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -244,7 +244,7 @@
           }
         },
         {
-          "name": "Top products (limit too high — expect 400)",
+          "name": "Top products (limit too high - expect 400)",
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",

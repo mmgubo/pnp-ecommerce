@@ -1,0 +1,23 @@
+{
+  "info": {
+    "name": "PnP Ecommerce - Import Smoke Test",
+    "_postman_id": "5b1f7e91-2d3a-4c8b-9a01-0123456789ab",
+    "description": "Minimal one-request collection used to verify Postman import is working. If this imports and shows the single request, the full pnp-ecommerce.postman_collection.json should also import.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List products (smoke test)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/api/v1/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "products"]
+        }
+      }
+    }
+  ]
+}
